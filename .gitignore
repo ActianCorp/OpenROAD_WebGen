@@ -1,0 +1,5 @@
+#
+#  Have Git ignore the following generated files and directories
+#
+logs/
+webapps/

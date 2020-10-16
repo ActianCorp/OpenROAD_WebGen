@@ -1,0 +1,12 @@
+# Windows user should use: git config --global core.autocrlf = true
+# Unix/Linux users should use: git config --global core.autocrlf = input
+#
+
+# Auto detect text files and perform LF normalization
+*       text=auto
+
+*.md   text
+# Shell scripts require LF
+*.bash  text eol=lf
+# Batch scripts require CRLF
+*.bat   text eol=crlf
