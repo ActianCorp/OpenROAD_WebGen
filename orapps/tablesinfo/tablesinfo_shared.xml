@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<OPENROAD xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<!-- Copyright (c) 2024 Actian Corporation. All Rights Reserved.-->
+	<APPLICATION name="tablesinfo_shared">
+		<included_apps>
+			<row>
+				<appname>core</appname>
+				<version>-1</version>
+				<imgfilename>core.plb</imgfilename>
+			</row>
+			<row_class>inclapp</row_class>
+		</included_apps>
+		<database_type>2</database_type>
+	</APPLICATION>
+	<COMPONENT name="uctables" xsi:type="classsource">
+		<superclass>userobject</superclass>
+		<attributes>
+			<row>
+				<displayname>table_name</displayname>
+				<datatype>varchar(256)</datatype>
+			</row>
+			<row>
+				<displayname>table_owner</displayname>
+				<datatype>varchar(32)</datatype>
+			</row>
+			<row>
+				<displayname>table_type</displayname>
+				<datatype>varchar(1)</datatype>
+			</row>
+			<row_class>attributeobject</row_class>
+		</attributes>
+	</COMPONENT>
+</OPENROAD>
