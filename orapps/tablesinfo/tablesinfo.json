@@ -1,0 +1,16 @@
+{
+    "ignoreunknownattributes": false,
+    "maxnestinglevel": 0,
+    "alwaysaddclassname": false,
+    "registeredprocs": {
+        "rows": [{
+                "params": {
+                    "rows": [
+                        {"name": "owner", "byref_use": false},
+                        {"name": "errmsg", "byref_use": true}
+                    ]
+                },
+                "name": "gettables"
+            }]
+    }
+}

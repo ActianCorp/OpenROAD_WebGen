@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<OPENROAD xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<!-- Copyright (c) 2024 Actian Corporation. All Rights Reserved.-->
+	<APPLICATION name="tablesinfo">
+		<included_apps>
+			<row>
+				<appname>core</appname>
+				<version>-1</version>
+				<imgfilename>core.plb</imgfilename>
+			</row>
+			<row>
+				<sequence>1</sequence>
+				<appname>tablesinfo_shared</appname>
+				<version>-1</version>
+			</row>
+			<row_class>inclapp</row_class>
+		</included_apps>
+		<procstart>startingghost</procstart>
+		<databasename>localhostii::demodb</databasename>
+		<database_type>1</database_type>
+	</APPLICATION>
+	<COMPONENT name="gettables" xsi:type="proc4glsource">
+		<versshortremarks>
+			<![CDATA[Returns Table Information]]>
+		</versshortremarks>
+		<script>
+			<![CDATA[// Copyright(c) 2024 Actian Corporation
+PROCEDURE gettables(
+	owner = VARCHAR(32) NOT NULL,
+	errmsg = VARCHAR(256) NOT NULL
+)=
+DECLARE
+	arrTables = Array of UCTables;
+	arrCount = INTEGER NOT NULL WITH DEFAULT 1;
+	CheckDBConnection = PROCEDURE RETURNING INTEGER NOT NULL;
+ENDDECLARE
+{	
+	IF owner = '$ingres' THEN
+		errmsg = 'System Tables are excluded.'
+	ELSEIF CurExec.DBSession IS NULL THEN
+		errmsg = 'Database is not connected.';
+	ELSE
+		IF CheckDBConnection() = ER_FAIL THEN
+			errmsg = 'Database could not be not reconnected.';
+		ENDIF;
+		IF owner = '' THEN
+			SELECT :arrTables[arrCount].table_owner = table_owner, 
+					:arrTables[arrCount].table_name = table_name, 
+					:arrTables[arrCount].table_type = table_type  
+			FROM iitables 
+			WHERE table_owner != '$ingres'
+			BEGIN
+				arrCount = arrCount + 1;
+			END;
+		ELSE
+			SELECT :arrTables[arrCount].table_owner = table_owner, 
+					:arrTables[arrCount].table_name = table_name, 
+					:arrTables[arrCount].table_type = table_type
+			FROM iitables 
+			WHERE table_owner = :owner
+			AND table_owner != '$ingres'
+			BEGIN
+				arrCount = arrCount + 1;
+			END;
+		ENDIF;
+		
+		IF iierrornumber <> 0 THEN
+			INQUIRE_SQL(errmsg = errortext);
+		ENDIF;
+		
+		COMMIT;
+	ENDIF;
+	CurSession.ClearErrorFlag();
+	RETURN arrTables;
+}
+
+
+PROCEDURE CheckDBConnection() =
+declare
+	db = VARCHAR(256) NOT NULL;
+	flags = VARCHAR(256) NOT NULL;
+	cnt = INTEGER NOT NULL;
+	chkerrmsg = VARCHAR(256) NOT NULL	
+enddeclare
+{
+	COMMIT;
+	IF iierrornumber <> 0 THEN
+		INQUIRE_SQL(chkerrmsg = errortext);
+		CurExec.Trace(text = 'Error during CheckDBConnection(): ' +  chkerrmsg);
+		// Try reconnecting
+		db = CurExec.DBSession.Database;
+		flags = CurExec.DBSession.Flags;
+		CurExec.DBSession.Disconnect();
+		IF CurExec.DBSession.Connect(database = db, flags = flags) = ER_OK THEN
+			CurExec.Trace(text = ' Application $_ApplicationName reconnected to database: ' +  db);
+		ELSE
+			CurExec.Trace(text = 'Application $_ApplicationName FAILED reconnection to database: ' +  db + HC_NEWLINE +
+				'Forcing application restart.');
+			cnt = 1/0;  // Force runtime error (division by zero) to restart server on next call
+			RETURN ER_FAIL; // No ClearErrorFlag() here as we want to force the restart
+		ENDIF;
+	ENDIF;
+	RETURN ER_OK;
+}
+]]>
+		</script>
+		<datatype>uctables</datatype>
+		<isarray>1</isarray>
+	</COMPONENT>
+	<COMPONENT name="startingghost" xsi:type="ghostsource">
+		<script>
+			<![CDATA[// Copyright(c) 2024 Actian Corporation
+initialize() =
+declare
+enddeclare
+{
+	CurFrame.Trace(text = VARCHAR(DATE('NOW'))+': Start of $_ApplicationName');
+}
+]]>
+		</script>
+	</COMPONENT>
+</OPENROAD>
